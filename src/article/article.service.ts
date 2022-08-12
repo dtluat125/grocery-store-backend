@@ -255,6 +255,7 @@ export class ArticleService {
 
   async findComments(slug: string): Promise<CommentsRO> {
     const article = await this.articleRepository.findOne({ slug });
+    console.log(article);
     return { comments: article.comments };
   }
 

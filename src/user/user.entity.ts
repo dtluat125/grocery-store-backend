@@ -1,5 +1,6 @@
 import {
   BeforeInsert,
+  BeforeUpdate,
   Column,
   Entity,
   JoinTable,
@@ -35,10 +36,11 @@ export class User {
   @Column({ select: false })
   password: string;
 
-  @OneToMany((type) => Comment, (comment) => comment.author, { eager: true })
+  @OneToMany((type) => Comment, (comment) => comment.author)
   comments: Comment[];
 
   @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword() {
     // Generate salt
     const salt = randomBytes(8).toString('hex');

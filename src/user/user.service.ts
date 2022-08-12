@@ -25,9 +25,9 @@ export class UserService {
     const userByUsername = await this.userRepository.findOne({ username });
     if (userByEmail || userByUsername) {
       if (userByEmail)
-        errorsResponse.errors['email'] = 'has already been taken';
+        errorsResponse.errors['email'] = ['has already been taken'];
       if (userByEmail)
-        errorsResponse.errors['username'] = 'has already been taken';
+        errorsResponse.errors['username'] = ['has already been taken'];
       throw new HttpException(errorsResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
     const user = this.userRepository.create(createUserDto);
@@ -47,6 +47,7 @@ export class UserService {
       { email },
       { select: ['id', 'username', 'email', 'bio', 'image', 'password'] },
     );
+
     if (!userByEmail) return null;
     const [salt, storedHash] = userByEmail?.password.split('.');
     const hash = (await scrypt(password, salt, 32)) as Buffer;
@@ -60,7 +61,7 @@ export class UserService {
   }
 
   async login(loginUserDto: LoginUserDto): Promise<User> {
-    const errorsResponse = { errors: { 'email or password': 'is invalid' } };
+    const errorsResponse = { errors: { 'email or password': ['is invalid'] } };
     const user = await this.validateUser(loginUserDto);
     if (!user)
       throw new HttpException(errorsResponse, HttpStatus.UNPROCESSABLE_ENTITY);
