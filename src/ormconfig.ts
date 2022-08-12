@@ -22,6 +22,7 @@ const config: PostgresConnectionOptions = {
   cli: {
     migrationsDir: 'src/migrations',
   },
+  url: process.env.DATABASE_URL,
 };
 
 export default config;
