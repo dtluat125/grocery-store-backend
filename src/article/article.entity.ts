@@ -1,10 +1,13 @@
+import { Comment } from '@app/article/comment.entity';
 import { User } from '@app/user/user.entity';
 import {
   BeforeUpdate,
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity({ name: 'articles' })
@@ -32,6 +35,10 @@ export class Article {
 
   @Column({ type: 'simple-array' })
   tagList: string[];
+
+  @OneToMany((type) => Comment, (comment) => comment.article, { eager: true })
+  @JoinColumn()
+  comments: Comment[];
 
   @Column({ default: 0 })
   favoritesCount: number;

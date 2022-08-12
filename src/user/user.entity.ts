@@ -11,6 +11,7 @@ import {} from 'bcrypt';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { Article } from '@app/article/article.entity';
+import { Comment } from '@app/article/comment.entity';
 
 const scrypt = promisify(_scrypt);
 
@@ -33,6 +34,9 @@ export class User {
 
   @Column({ select: false })
   password: string;
+
+  @OneToMany((type) => Comment, (comment) => comment.author, { eager: true })
+  comments: Comment[];
 
   @BeforeInsert()
   async hashPassword() {

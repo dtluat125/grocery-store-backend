@@ -1,3 +1,6 @@
+import { CreateCommentDto } from '@app/article/dto/createComment.dto';
+import { CommentsRO } from '@app/article/types/article.type';
+import { CommentResponseInterface } from '@app/article/types/commentResponse.interface';
 import { BackendValidationPipe } from '@app/shared/pipes/backendValidation.pipe';
 import { User } from '@app/user/decorators/user.decorator';
 import { AuthGuard } from '@app/user/guards/auth.guards';
@@ -114,5 +117,20 @@ export class ArticleController {
     );
 
     return this.articleService.buildArticleResponse(article);
+  }
+
+  @Get(':slug/comments')
+  async findComments(@Param('slug') slug): Promise<CommentsRO> {
+    return this.articleService.findComments(slug);
+  }
+
+  @Post('/:slug/comments')
+  @UseGuards(AuthGuard)
+  async createComment(
+    @User('id') currentUserId,
+    @Param('slug') slug,
+    @Body('comment') commentData: CreateCommentDto,
+  ): Promise<CommentResponseInterface> {
+    return this.articleService.addComment(currentUserId, slug, commentData);
   }
 }

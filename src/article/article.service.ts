@@ -1,3 +1,4 @@
+import { Comment } from '@app/article/comment.entity';
 import { FollowEntity } from '@app/profile/follow.entity';
 import { User } from '@app/user/user.entity';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
@@ -6,7 +7,7 @@ import slugify from 'slugify';
 import { DeleteResult, getRepository, Repository } from 'typeorm';
 import { Article } from './article.entity';
 import { CreateArticleDto } from './dto/createArticle.dto';
-import { ArticleType } from './types/article.type';
+import { ArticleType, CommentsRO } from './types/article.type';
 import { ArticleResponseInterface } from './types/articleResponse.interface';
 import { ArticlesResponseInterface } from './types/articlesResponse.interface';
 
@@ -15,6 +16,8 @@ export class ArticleService {
   constructor(
     @InjectRepository(Article)
     private readonly articleRepository: Repository<Article>,
+    @InjectRepository(Comment)
+    private readonly commentRepository: Repository<Comment>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(FollowEntity)
@@ -135,7 +138,7 @@ export class ArticleService {
     }
     article.author = currentUser;
     article.slug = this.getSlug(article?.title);
-    return await this.articleRepository.save(article);
+    return this.articleRepository.save(article);
   }
 
   async addArticleToFavorites(
@@ -185,8 +188,10 @@ export class ArticleService {
   buildArticleResponse(
     article: Article | ArticleType,
   ): ArticleResponseInterface {
+    let favorited = false;
+    if (article.favoritesCount > 0) favorited = true;
     return {
-      article,
+      article: { ...article, favorited },
     };
   }
 
@@ -246,5 +251,22 @@ export class ArticleService {
       );
     }
     return article;
+  }
+
+  async findComments(slug: string): Promise<CommentsRO> {
+    const article = await this.articleRepository.findOne({ slug });
+    return { comments: article.comments };
+  }
+
+  async addComment(userId, slug, commentData) {
+    let article = await this.articleRepository.findOne({ slug });
+    let comment = new Comment();
+    const user = await this.userRepository.findOne({ id: userId });
+    comment.body = commentData.body;
+    comment.author = user;
+    article.comments.push(comment);
+    comment = await this.commentRepository.save(comment);
+    await this.articleRepository.save(article);
+    return { comment };
   }
 }
